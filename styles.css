@@ -1,74 +1,83 @@
-.tutorial {
-  width: 600px;
-  text-align: center;
-  margin: auto;
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 1rem;
 }
 
-figure.image {
+.title-link h1.title {
+  font-size: 2.5rem;
+  color: #fff;
   display: flex;
-  justify-content: center;
-  background-color: black;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-figure.image img {
-  width: 128px;
+.field.is-grouped {
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
-.notification {
-  margin-top: 20px !important;
+.input, select {
+  max-width: 300px;
 }
 
-.results {
-  max-height: 500px;
+.autocomplete {
+  position: relative;
+  max-width: 300px;
+  margin-bottom: 2rem;
+}
+
+.dropdown {
+  position: absolute;
+  width: 100%;
+  background: #fff;
+  border: 1px solid #dbdbdb;
+  border-radius: 5px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  z-index: 1000;
+  max-height: 320px;
   overflow-y: auto;
-}
-
-.title .icon {
-  margin-left: 15px;
-}
-
-.hero {
-  margin-bottom: 20px;
-}
-
-.forms {
-  display: flex;
-  justify-content: space-around;
 }
 
 .dropdown-item {
   display: flex;
   align-items: center;
-  height: 60px;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+}
+
+.dropdown-item:hover {
+  background-color: #485fc7;
+  color: white;
 }
 
 .dropdown-item img {
-  height: 50px;
-  margin-right: 10px;
+  width: 40px;
+  height: 56px;
+  object-fit: cover;
 }
 
-/* Responsive for tablet */
+#summary h1 {
+  font-size: 2rem;
+}
+
+.notification.is-primary {
+  background-color: #485fc7;
+  color: white;
+  margin-bottom: 1rem;
+  border-radius: 6px;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
-  figure.image img {
-    width: 96px;
+  .input, select {
+    max-width: 100%;
   }
-  .dropdown-item {
-    height: 50px;
-  }
-  .dropdown-item img {
-    height: 40px;
-  }
-}
 
-/* Responsive for mobile */
-@media (max-width: 480px) {
-  figure.image img {
-    width: 64px;
-  }
-  .dropdown-item {
-    height: 40px;
-  }
-  .dropdown-item img {
-    height: 32px;
+  .autocomplete {
+    max-width: 100%;
   }
 }
