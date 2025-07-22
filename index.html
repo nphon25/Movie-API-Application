@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Film Archive</title>
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css" />
   <link rel="stylesheet" href="styles.css" />
   <script defer src="https://use.fontawesome.com/releases/v5.15.4/js/all.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -15,8 +14,8 @@
     <div class="hero-body">
       <div class="container">
         <a href="index.html" class="title-link">
-  <h1 class="title"> Film Archive <span class="icon"><i class="fas fa-film"></i></span></h1></a>
-
+          <h1 class="title"> Film Archive <span class="icon"><i class="fas fa-film"></i></span></h1>
+        </a>
       </div>
     </div>
   </section>
@@ -42,6 +41,12 @@
         </p>
         <p class="control">
           <input id="yearInput" class="input" type="number" min="1900" max="2099" placeholder="Year" />
+        </p>
+        <p class="control">
+          <button id="searchButton" class="button button-primary" type="button">
+            <span class="icon"><i class="fas fa-search"></i></span>
+            <span>Search</span>
+          </button>
         </p>
       </div>
 

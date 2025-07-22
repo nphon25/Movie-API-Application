@@ -2,8 +2,13 @@ createAutoComplete({
   root: document.querySelector(".autocomplete"),
   input: document.querySelector("#titleInput"),
   renderOption(movie) {
-    const imgSrc = movie.Poster === "N/A" ? "https://via.placeholder.com/50x70?text=No+Image" : movie.Poster;
-    return `<img src="${imgSrc}" alt="Poster" /><span>${movie.Title} (${movie.Year})</span>`;
+    const imgSrc = movie.Poster === "N/A" 
+      ? "https://via.placeholder.com/50x70?text=No+Image" 
+      : movie.Poster;
+    return `
+      <img src="${imgSrc}" alt="Poster" />
+      <span>${movie.Title} (${movie.Year})</span>
+    `;
   },
   inputValue(movie) {
     return movie.Title;
@@ -28,7 +33,6 @@ createAutoComplete({
     let movies = response.data.Search;
 
     if (genre) {
-      // Fetch full details for each movie to filter by genre
       const detailedMovies = await Promise.all(
         movies.map(movie =>
           axios.get("https://www.omdbapi.com/", {
@@ -109,3 +113,57 @@ const movieTemplate = (movie) => {
     </article>
   `;
 };
+
+// Function to perform search and display results in #summary
+const performSearch = async () => {
+  const searchTerm = document.querySelector("#titleInput").value.trim();
+  const genre = document.querySelector("#genreSelect").value;
+  const year = document.querySelector("#yearInput").value;
+
+  if (!searchTerm) {
+    document.querySelector("#summary").innerHTML = `<p>Please enter a movie title to search.</p>`;
+    return;
+  }
+
+  try {
+    const params = {
+      apikey: "87b5f1b8",
+      s: searchTerm,
+      type: "movie"
+    };
+    if (year) params.y = year;
+
+    const response = await axios.get("https://www.omdbapi.com/", { params });
+
+    if (response.data.Error) {
+      document.querySelector("#summary").innerHTML = `<p>No results found.</p>`;
+      return;
+    }
+
+    let movies = response.data.Search;
+
+    if (genre) {
+      const detailedMovies = await Promise.all(
+        movies.map(movie =>
+          axios.get("https://www.omdbapi.com/", {
+            params: { apikey: "87b5f1b8", i: movie.imdbID }
+          }).then(res => res.data)
+        )
+      );
+
+      movies = detailedMovies.filter(m => m.Genre.includes(genre));
+    }
+
+    if (movies.length === 0) {
+      document.querySelector("#summary").innerHTML = `<p>No movies match the selected genre.</p>`;
+      return;
+    }
+
+    onMovieSelect(movies[0]);
+  } catch (error) {
+    document.querySelector("#summary").innerHTML = `<p>Error fetching data. Please try again later.</p>`;
+    console.error(error);
+  }
+};
+
+document.querySelector("#searchButton").addEventListener("click", performSearch);
