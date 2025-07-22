@@ -1,58 +1,64 @@
+// AUTOCOMPLETE SETUP 
 createAutoComplete({
   root: document.querySelector(".autocomplete"),
   input: document.querySelector("#titleInput"),
+
+  // Display dropdown option
   renderOption(movie) {
     const imgSrc = movie.Poster === "N/A" 
       ? "https://via.placeholder.com/50x70?text=No+Image" 
       : movie.Poster;
-    return `
-      <img src="${imgSrc}" alt="Poster" />
-      <span>${movie.Title} (${movie.Year})</span>
-    `;
+    return `<img src="${imgSrc}" alt="Poster" />
+            <span>${movie.Title} (${movie.Year})</span>`;
   },
+
+  // Set input value from selected movie
   inputValue(movie) {
     return movie.Title;
   },
+
+  // Fetch autocomplete suggestions
   async fetchData(searchTerm) {
     const genre = document.querySelector("#genreSelect").value;
     const year = document.querySelector("#yearInput").value;
-
     if (!searchTerm) return [];
 
     const params = {
       apikey: "87b5f1b8",
       s: searchTerm,
-      type: "movie"
+      type: "movie",
+      ...(year && { y: year })
     };
 
-    if (year) params.y = year;
+    const res = await axios.get("https://www.omdbapi.com/", { params });
+    if (res.data.Error) return [];
 
-    const response = await axios.get("https://www.omdbapi.com/", { params });
-    if (response.data.Error) return [];
+    let movies = res.data.Search;
 
-    let movies = response.data.Search;
-
+    // Filter by genre
     if (genre) {
-      const detailedMovies = await Promise.all(
-        movies.map(movie =>
+      const detailed = await Promise.all(
+        movies.map(m =>
           axios.get("https://www.omdbapi.com/", {
-            params: { apikey: "87b5f1b8", i: movie.imdbID }
+            params: { apikey: "87b5f1b8", i: m.imdbID }
           }).then(res => res.data)
         )
       );
-
-      movies = detailedMovies.filter(m => m.Genre.includes(genre));
+      movies = detailed.filter(m => m.Genre.includes(genre));
     }
 
     return movies;
   },
+
+  // Handle selection from dropdown
   onOptionSelect(movie) {
     onMovieSelect(movie);
   }
 });
 
+//  DISPLAY SELECTED MOVIE 
 const onMovieSelect = async (movie) => {
-  const response = await axios.get("https://www.omdbapi.com/", {
+  const res = await axios.get("https://www.omdbapi.com/", {
     params: {
       apikey: "87b5f1b8",
       i: movie.imdbID,
@@ -60,17 +66,23 @@ const onMovieSelect = async (movie) => {
     }
   });
 
-  document.querySelector("#summary").innerHTML = movieTemplate(response.data);
+  document.querySelector("#summary").innerHTML += movieTemplate(res.data);
 };
 
+// movie html template 
 const movieTemplate = (movie) => {
-  const ratings = movie.Ratings
-    ? movie.Ratings.map(r => `<p><strong>${r.Source}:</strong> ${r.Value}</p>`).join("")
-    : "N/A";
+  const ratings = movie.Ratings?.map(r =>
+    `<p><strong>${r.Source}:</strong> ${r.Value}</p>`).join("") || "N/A";
 
   const poster = movie.Poster === "N/A"
     ? "https://via.placeholder.com/150x220?text=No+Image"
     : movie.Poster;
+
+  const infoBox = (title, subtitle) => `
+    <article class="notification is-primary">
+      <p class="title">${title || "N/A"}</p>
+      <p class="subtitle">${subtitle}</p>
+    </article>`;
 
   return `
     <article class="media">
@@ -90,38 +102,23 @@ const movieTemplate = (movie) => {
         </div>
       </div>
     </article>
-
-    <article class="notification is-primary">
-      <p class="title">${movie.Awards || "N/A"}</p>
-      <p class="subtitle">Awards</p>
-    </article>
-    <article class="notification is-primary">
-      <p class="title">${movie.BoxOffice || "N/A"}</p>
-      <p class="subtitle">Box Office</p>
-    </article>
-    <article class="notification is-primary">
-      <p class="title">${movie.Metascore || "N/A"}</p>
-      <p class="subtitle">Metascore</p>
-    </article>
-    <article class="notification is-primary">
-      <p class="title">${movie.imdbRating || "N/A"}</p>
-      <p class="subtitle">IMDB Rating</p>
-    </article>
-    <article class="notification is-primary">
-      <p class="title">${movie.imdbVotes || "N/A"}</p>
-      <p class="subtitle">IMDB Votes</p>
-    </article>
+    ${infoBox(movie.Awards, "Awards")}
+    ${infoBox(movie.BoxOffice, "Box Office")}
+    ${infoBox(movie.Metascore, "Metascore")}
+    ${infoBox(movie.imdbRating, "IMDB Rating")}
+    ${infoBox(movie.imdbVotes, "IMDB Votes")}
   `;
 };
 
-// Function to perform search and display results in #summary
+// manual search handler 
 const performSearch = async () => {
   const searchTerm = document.querySelector("#titleInput").value.trim();
   const genre = document.querySelector("#genreSelect").value;
   const year = document.querySelector("#yearInput").value;
+  const summaryEl = document.querySelector("#summary");
 
   if (!searchTerm) {
-    document.querySelector("#summary").innerHTML = `<p>Please enter a movie title to search.</p>`;
+    summaryEl.innerHTML = `<p>Please enter a movie title to search.</p>`;
     return;
   }
 
@@ -129,44 +126,44 @@ const performSearch = async () => {
     const params = {
       apikey: "87b5f1b8",
       s: searchTerm,
-      type: "movie"
+      type: "movie",
+      ...(year && { y: year })
     };
-    if (year) params.y = year;
 
-    const response = await axios.get("https://www.omdbapi.com/", { params });
+    const res = await axios.get("https://www.omdbapi.com/", { params });
 
-    if (response.data.Error) {
-      document.querySelector("#summary").innerHTML = `<p>No results found.</p>`;
+    if (res.data.Error) {
+      summaryEl.innerHTML = `<p>No results found.</p>`;
       return;
     }
 
-    let movies = response.data.Search;
+    let movies = res.data.Search;
 
     if (genre) {
-      const detailedMovies = await Promise.all(
-        movies.map(movie =>
+      const detailed = await Promise.all(
+        movies.map(m =>
           axios.get("https://www.omdbapi.com/", {
-            params: { apikey: "87b5f1b8", i: movie.imdbID }
+            params: { apikey: "87b5f1b8", i: m.imdbID }
           }).then(res => res.data)
         )
       );
-
-      movies = detailedMovies.filter(m => m.Genre.includes(genre));
+      movies = detailed.filter(m => m.Genre.includes(genre));
     }
 
-    if (movies.length === 0) {
-      document.querySelector("#summary").innerHTML = `<p>No movies match the selected genre.</p>`;
+    if (!movies.length) {
+      summaryEl.innerHTML = `<p>No movies match the selected genre.</p>`;
       return;
     }
 
-    
-    for(let i = 0;i<movies.length;i++) {
-onMovieSelect(movies[i]);
+    summaryEl.innerHTML = ""; // Clear previous results
+    for (let movie of movies) {
+      await onMovieSelect(movie);
     }
-  } catch (error) {
-    document.querySelector("#summary").innerHTML = `<p>Error fetching data. Please try again later.</p>`;
-    console.error(error);
+  } catch (err) {
+    summaryEl.innerHTML = `<p>Error fetching data.</p>`;
+    console.error(err);
   }
 };
 
+// Event Listener
 document.querySelector("#searchButton").addEventListener("click", performSearch);
