@@ -159,7 +159,10 @@ const performSearch = async () => {
       return;
     }
 
-    onMovieSelect(movies[0]);
+    
+    for(let i = 0;i<movies.length;i++) {
+onMovieSelect(movies[i]);
+    }
   } catch (error) {
     document.querySelector("#summary").innerHTML = `<p>Error fetching data. Please try again later.</p>`;
     console.error(error);
